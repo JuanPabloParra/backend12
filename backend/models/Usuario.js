@@ -1,19 +1,36 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
-const UsuarioSchema = Schema({
-  name: {
-    type: String,
-    required: true
+const UsuarioScheme = Schema(
+  {
+    name: {
+      type: String,
+      require: true,
+    },
+    email: {
+      type: String,
+      require: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      require: true,
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
+  {
+    toJSON: {
+      virtual: true,
+    },
+    toObject: {
+      virtual: true,
+    },
   }
+);
+
+UsuarioScheme.virtual("tareas", {
+  ref: "Task",
+  localField: "_id",
+  foreignField: "user",
+  justOne: false,
 });
 
-module.exports = model('Usuario', UsuarioSchema);
+module.exports = model("Usuario", UsuarioScheme);

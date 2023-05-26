@@ -1,17 +1,21 @@
-const listarUsuarios = async(req, res = express.request)=>{
-    const usuarios = await Usuario.find().populate('tareas', 'title');
+const Usuario = require("../models/UsuarioScheme");
 
-    try{
-        res.status(200).json({
-            ok: true,
-            usuarios
-        })
+const listarUsuarios = async (req, res = express.request) => {
+  const usuarios = await Usuario.find().populate("tareas", "title");
+  try {
+    res.status(200).json({
+      ok: true,
+      usuarios,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: "Error Interno",
+    });
+  }
+};
 
-    }catch(error){
-        console.log(error)
-        res.status(500).json({
-            ok: false,
-            msg: 'Error Interno',
-        })
-    }
-}
+module.exports = {
+  listarUsuarios,
+};
