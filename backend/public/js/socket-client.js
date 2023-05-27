@@ -68,3 +68,24 @@ socket.on("recibir-mensaje", (payload) => {
     private.innerHTML += `<li class="${className}"> <small> ${payload.mensaje} </small> </li>`;
   }
 });
+
+// Nuevo código para el botón enviar
+const btnEnviar = document.querySelector("#btnEnviar");
+
+btnEnviar.addEventListener("click", () => {
+  const uId = txtUid.value;
+  const mensaje = txtMensaje.value;
+
+  const payload = {
+    from: socket.id,
+    to: uId,
+    mensaje,
+  };
+
+  if (mensaje.length === 0) {
+    return;
+  }
+
+  socket.emit("enviar-mensaje", payload);
+  txtMensaje.value = "";
+});

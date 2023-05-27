@@ -12,7 +12,7 @@ const socketController = (socket, io) => {
   });
 
   socket.on("mensaje-de-cliente", (payload, callback) => {
-    callback("TU mensaje fue recibido!!");
+    callback("Tu mensaje fue recibido!!");
     payload.from = "desde el server";
     socket.broadcast.emit("mensaje-de-server", payload);
   });

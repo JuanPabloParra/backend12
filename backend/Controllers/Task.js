@@ -1,95 +1,105 @@
-const crearTask = async (req, res = express.Response) => {
+const Task = require("../models/TaskScheme");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
+
+const crearTask = async (req, res = express.request) => {
   const task = new Task(req.body);
   try {
     task.user = req.uid;
     const saved = await task.save();
     res.json({
       ok: true,
-      task: saved
+      task: saved,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      task: 'Internal Error'
+      task: "Internal Error",
     });
   }
 };
 
-const listarTasks = async (req, res = express.Response) => {
+const listarTasks = async (req, res = express.request) => {
+  const tasks = await Task.find().populate("user", "name");
   try {
-    const tasks = await Task.find().populate('user', 'name');
     res.status(200).json({
       ok: true,
-      tasks
+      tasks,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      task: 'Error Interno'
+      msg: "Error Interno",
     });
   }
 };
 
-const actualizarTask = async (req, res) => {
+const actualizarTask = async (req, res = express.request) => {
+  const taskId = req.params.id;
+  const taskBody = req.body;
   try {
-    const taskId = req.params.id;
-    const updatedData = req.body;
-
-    // Buscar la tarea por su ID y actualizar los campos con los datos proporcionados
-    const task = await Task.findByIdAndUpdate(taskId, updatedData, { new: true });
-
+    const task = await Task.findById(taskId);
     if (!task) {
       return res.status(404).json({
         ok: false,
-        error: 'Tarea no encontrada'
+        task: "Task not found",
       });
     }
-
-    res.json({
+    if (!task.user.equals(new ObjectId(req.uid))) {
+      return res.status(500).json({
+        ok: false,
+        task: "El usuario no tiene permisos para modificar esta task",
+      });
+    }
+    const updatedTask = await Task.findByIdAndUpdate(taskId, taskBody, {
+      new: true,
+    });
+    res.status(200).json({
       ok: true,
-      task
+      updatedTask,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       ok: false,
-      error: 'Error interno'
+      msg: "Error Interno",
     });
   }
 };
 
-const eliminarTask = async (req, res) => {
+const eliminarTask = async (req, res = express.request) => {
+  const taskId = req.params.id;
+  const taskBody = req.body;
   try {
-    const taskId = req.params.id;
-
-    // Buscar la tarea por su ID y eliminarla
-    const deletedTask = await Task.findByIdAndDelete(taskId);
-
-    if (!deletedTask) {
-      return res.status(404).json({
+    const task = await Task.findById(taskId);
+    if (!task.user.equals(new ObjectId(req.uid))) {
+      return res.status(500).json({
         ok: false,
-        error: 'Tarea no encontrada'
+        task: "El usuario no tiene permisos para modificar esta task",
       });
     }
-
-    res.json({
-      ok: true,
-      message: 'Tarea eliminada correctamente'
+    const updatedTask = await Task.findByIdAndDelete(taskId, taskBody, {
+      new: true,
     });
+    res.status(200).json({
+      ok: true,
+      updatedTask,
+    });
+    console.log(`Task ${taskId} deleted`);
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(404).json({
       ok: false,
-      error: 'Error interno'
+      task: "Task not found",
     });
   }
 };
 
 module.exports = {
-  crearTask,
   listarTasks,
+  crearTask,
   actualizarTask,
-  eliminarTask
+  eliminarTask,
 };
